@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - Stock Portfolio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">Profile</div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="stock-graph.html">Stock Graph</a>
+      <a href="#" id="logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card profile-hero">
+      <div class="profile-hero-copy">
+        <span class="eyebrow">Account Center</span>
+        <h1>Manage Your Profile</h1>
+        <p>Keep your contact details updated and secure your account with a strong password.</p>
+      </div>
+      <div class="profile-hero-stat">
+        <strong>Security Tip</strong>
+        <p>Use a unique password and update it regularly to keep your portfolio account safe.</p>
+      </div>
+    </section>
+
+    <section class="profile-grid">
+      <section class="card profile-panel">
+        <div class="section-title-block compact">
+          <h2>Personal Details</h2>
+          <p>Update your name and email for account communication.</p>
+        </div>
+        <form id="profile-form" class="profile-form">
+          <label for="profile-name">Name</label>
+          <input type="text" id="profile-name" required minlength="2" maxlength="50" title="Name must be 2 to 50 characters." spellcheck="false" autocapitalize="off" autocorrect="off" />
+          <label for="profile-email">Email</label>
+          <input type="email" id="profile-email" required />
+          <button type="submit" class="primary-btn">Save Profile</button>
+        </form>
+        <div id="profile-message" class="message"></div>
+      </section>
+
+      <section class="card profile-panel">
+        <div class="section-title-block compact">
+          <h2>Change Password</h2>
+          <p>Minimum 6 characters recommended.</p>
+        </div>
+        <form id="password-form" class="profile-form">
+          <label for="current-password">Current Password</label>
+          <input type="password" id="current-password" required />
+          <label for="new-password">New Password</label>
+          <input type="password" id="new-password" required minlength="6" />
+          <button type="submit" class="primary-btn">Update Password</button>
+        </form>
+        <div id="password-message" class="message"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="theme.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register - Stock Portfolio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="center-screen">
+    <div class="card auth-card">
+      <h1>Create Account</h1>
+      <p>Start tracking your stock portfolio.</p>
+      <form id="register-form">
+        <label>Name</label>
+        <input type="text" id="name" required minlength="2" maxlength="50" title="Name must be 2 to 50 characters." spellcheck="false" autocapitalize="off" autocorrect="off" />
+        <label>Email</label>
+        <input type="email" id="email" required />
+        <label>Password</label>
+        <input type="password" id="password" required minlength="5" maxlength="15" title="Password must be 5 to 15 characters long." />
+        <button type="submit" class="primary-btn">Register</button>
+      </form>
+      <p class="small-text">
+        Already have an account? <a href="index.html">Login</a>
+      </p>
+      <div id="message" class="message"></div>
+    </div>
+  </main>
+  <script src="theme.js"></script>
+  <script src="api.js"></script>
+  <script>
+    const form = document.getElementById('register-form');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.textContent = '';
+      const name = document.getElementById('name').value.trim().replace(/\s+/g, ' ');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      if (name.length < 2 || name.length > 50) {
+        message.textContent = 'Name must be 2 to 50 characters.';
+        return;
+      }
+      if (password.length < 5 || password.length > 15) {
+        message.textContent = 'Password must be 5 to 15 characters long.';
+        return;
+      }
+      try {
+        const response = await apiFetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          window.location.href = 'dashboard.html';
+        } else {
+          message.textContent = data.error || 'Registration failed.';
+        }
+      } catch (err) {
+        message.textContent = 'Unable to contact server. Please ensure backend is running at http://localhost:3000.';
+      }
+    });
+  </script>
+</body>
+</html>

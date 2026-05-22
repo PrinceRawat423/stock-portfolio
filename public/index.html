@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Portfolio Login</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="center-screen landing-screen">
+    <section class="landing-shell">
+      <div class="landing-copy">
+        <span class="eyebrow">Smart investing starts with clarity</span>
+        <h1>Track your portfolio with a calmer, cleaner dashboard.</h1>
+        <p class="hero-text">
+          Monitor holdings, review performance, and keep every investment decision organized in one focused workspace.
+        </p>
+        <div class="hero-points">
+          <div class="hero-point">
+            <strong>Live overview</strong>
+            <span>See your portfolio performance at a glance.</span>
+          </div>
+          <div class="hero-point">
+            <strong>Simple records</strong>
+            <span>Keep holdings and transactions neatly managed.</span>
+          </div>
+          <div class="hero-point">
+            <strong>Quick access</strong>
+            <span>Sign in fast and continue where you left off.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card auth-card">
+        <div class="auth-card-header">
+          <span class="auth-badge">Portfolio Login</span>
+          <h2>Welcome back</h2>
+          <p>Login to manage your investments.</p>
+        </div>
+        <form id="login-form">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="you@example.com" required />
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required />
+          <button type="submit" class="primary-btn">Login</button>
+        </form>
+        <div class="social-login">
+          <div class="social-divider">
+            <span>or continue with</span>
+          </div>
+          <div class="social-buttons">
+            <button type="button" class="social-btn" data-provider="google">Google</button>
+            <button type="button" class="social-btn" data-provider="facebook">Facebook</button>
+            <button type="button" class="social-btn" data-provider="apple">Apple</button>
+          </div>
+        </div>
+        <a href="forgot-password.html" class="text-btn inline-link">Forgot password?</a>
+        <p class="small-text">
+          New here? <a href="register.html">Create account</a>
+        </p>
+        <div id="message" class="message"></div>
+      </div>
+    </section>
+  </main>
+  <script src="theme.js"></script>
+  <script src="api.js"></script>
+  <script>
+    const form = document.getElementById('login-form');
+    const message = document.getElementById('message');
+    const socialButtons = document.querySelectorAll('.social-btn');
+
+    const socialErrorMap = {
+      'social-not-configured': 'Social login is not configured on the server yet.',
+      'social-invalid-provider': 'Invalid social provider.',
+      'social-invalid-state': 'Social login validation failed. Please try again.',
+      'social-missing-code': 'Social login did not return an auth code.',
+      'social-token-failed': 'Could not verify social login token.',
+      'google-profile-failed': 'Could not fetch Google profile.',
+      'facebook-profile-failed': 'Could not fetch Facebook profile.',
+      'apple-config-missing': 'Apple login is missing configuration values.',
+      'social-login-failed': 'Social login failed. Please try again.'
+    };
+
+    const url = new URL(window.location.href);
+    const socialError = url.searchParams.get('error');
+    if (socialError && socialErrorMap[socialError]) {
+      message.textContent = socialErrorMap[socialError];
+      message.classList.add('error');
+      url.searchParams.delete('error');
+      window.history.replaceState({}, '', url.pathname + (url.search ? `?${url.searchParams.toString()}` : ''));
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.textContent = '';
+      message.classList.remove('error');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        const response = await apiFetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          window.location.href = 'dashboard.html';
+        } else {
+          message.textContent = data.error || 'Login failed.';
+        }
+      } catch (err) {
+        message.textContent = 'Unable to reach server.';
+      }
+    });
+
+    socialButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const provider = button.dataset.provider;
+        window.location.href = `/auth/${provider}`;
+      });
+    });
+  </script>
+</body>
+</html>

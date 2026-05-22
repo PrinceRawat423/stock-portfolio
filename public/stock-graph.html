@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Graph - Stock Portfolio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">Stock Graph</div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="profile.html">Profile</a>
+      <a href="#" id="logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card graph-hero">
+      <div>
+        <span class="eyebrow">Visual Tracking</span>
+        <h2>Portfolio Price Trend</h2>
+        <p>Each point compares buy price and current price for your holdings sorted by position value.</p>
+      </div>
+      <div class="graph-summary">
+        <div>
+          <span>Total Holdings</span>
+          <strong id="graph-total-holdings">0</strong>
+        </div>
+        <div>
+          <span>Avg Return</span>
+          <strong id="graph-average-return">0.0%</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card graph-card">
+      <div class="graph-legend">
+        <div><span class="dot buy-dot"></span> Buy Price</div>
+        <div><span class="dot current-dot"></span> Current Price</div>
+      </div>
+      <div id="graph-hover" class="graph-hover">Hover a point to inspect stock values.</div>
+      <div id="graph-empty" class="empty-state hidden">
+        <strong>No holdings available</strong>
+        <p>Add stocks from dashboard to see your trend graph.</p>
+      </div>
+      <div id="graph-wrap" class="graph-wrap">
+        <svg id="portfolio-graph" viewBox="0 0 900 360" role="img" aria-label="Portfolio price graph"></svg>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title-block compact">
+        <span class="eyebrow">Performance Snapshot</span>
+        <h2>Top Movers</h2>
+      </div>
+      <div class="table-wrapper">
+        <table id="movers-table">
+          <thead>
+            <tr>
+              <th>Stock</th>
+              <th>Buy Price</th>
+              <th>Current Price</th>
+              <th>Return</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="theme.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
