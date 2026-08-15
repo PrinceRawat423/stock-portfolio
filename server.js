@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '.env.live-prices' });
 require('dotenv').config();
 
 const express = require('express');
@@ -28,6 +29,9 @@ const isProduction = String(process.env.NODE_ENV || '').toLowerCase() === 'produ
 const allowDevOtpFallback =
   String(process.env.DEV_OTP_FALLBACK || 'false').toLowerCase() === 'true' && !isProduction;
 const oauthRedirectBase = process.env.OAUTH_REDIRECT_BASE || `http://localhost:${port}`;
+const alphaVantageApiKey = String(process.env.ALPHA_VANTAGE_API_KEY || '').trim();
+const quoteCache = new Map();
+const quoteCacheLifetimeMs = 5 * 60 * 1000;
 
 function hasRealEnvValue(value, placeholders = []) {
   const normalized = String(value || '').trim();
@@ -36,6 +40,56 @@ function hasRealEnvValue(value, placeholders = []) {
   }
 
   return !placeholders.includes(normalized.toLowerCase());
+}
+
+function getMarketSymbol(symbol) {
+  return `${String(symbol || '').trim().toUpperCase()}.BSE`;
+}
+
+async function getLatestMarketQuote(symbol) {
+  const marketSymbol = getMarketSymbol(symbol);
+  const cached = quoteCache.get(marketSymbol);
+  if (cached && Date.now() - cached.cachedAt < quoteCacheLifetimeMs) return { ...cached.quote, cached: true };
+  if (!alphaVantageApiKey) {
+    const error = new Error('LIVE_PRICE_NOT_CONFIGURED');
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const query = new URLSearchParams({ function: 'GLOBAL_QUOTE', symbol: marketSymbol, apikey: alphaVantageApiKey });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(`https://www.alphavantage.co/query?${query.toString()}`, { signal: controller.signal });
+    if (!response.ok) {
+      const error = new Error('MARKET_DATA_UNAVAILABLE');
+      error.statusCode = 502;
+      throw error;
+    }
+    const data = await response.json();
+    const quoteData = data['Global Quote'];
+    if (!quoteData || !Object.keys(quoteData).length) {
+      const error = new Error(data.Note ? 'MARKET_DATA_RATE_LIMITED' : 'MARKET_QUOTE_NOT_FOUND');
+      error.statusCode = data.Note ? 429 : 404;
+      throw error;
+    }
+    const price = Number(quoteData['05. price']);
+    if (!Number.isFinite(price) || price <= 0) {
+      const error = new Error('MARKET_QUOTE_NOT_FOUND');
+      error.statusCode = 404;
+      throw error;
+    }
+    const quote = {
+      symbol: String(symbol).toUpperCase(), marketSymbol, price: Number(price.toFixed(2)),
+      previousClose: Number(quoteData['08. previous close']) || null,
+      change: Number(quoteData['09. change']) || 0, changePercent: quoteData['10. change percent'] || '0%',
+      latestTradingDay: quoteData['07. latest trading day'] || null, source: 'Alpha Vantage', cached: false
+    };
+    quoteCache.set(marketSymbol, { quote, cachedAt: Date.now() });
+    return quote;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
@@ -1146,6 +1200,20 @@ app.get('/api/stocks/:symbol', requireAuth, (req, res) => {
   }
 
   return res.json({ stock });
+});
+
+app.get('/api/market/quote/:symbol', requireAuth, async (req, res) => {
+  const symbol = String(req.params.symbol || '').trim().toUpperCase();
+  const stock = stockCatalog.find((item) => item.symbol === symbol);
+  if (!stock) return res.status(404).json({ error: 'Stock not found.' });
+  try {
+    return res.json({ quote: await getLatestMarketQuote(symbol) });
+  } catch (error) {
+    if (error.statusCode === 429) return res.status(429).json({ error: 'Market data limit reached. Please try again in a few minutes.' });
+    if (error.statusCode === 404) return res.status(404).json({ error: 'No live quote is available for this stock.' });
+    if (error.statusCode === 503) return res.status(503).json({ error: 'Live market data is not configured.' });
+    return respondServerError(res, error, 'Unable to retrieve the latest market quote.');
+  }
 });
 
 app.get('*', (req, res) => {

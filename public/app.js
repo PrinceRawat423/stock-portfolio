@@ -519,6 +519,7 @@ function initDashboardPage() {
   const currentPriceInput = document.getElementById('current-price');
   const buyTotalPreview = document.getElementById('buy-total-preview');
   const currentTotalPreview = document.getElementById('current-total-preview');
+  const marketPriceStatus = document.getElementById('market-price-status');
   const suggestionsEl = document.getElementById('stock-suggestions');
   const messageEl = document.getElementById('stock-message');
   const totalInvestment = document.getElementById('total-investment');
@@ -591,12 +592,27 @@ function initDashboardPage() {
     suggestionsEl.innerHTML = '';
   }
 
-  function selectStock(stock) {
+  async function selectStock(stock) {
     stockNameInput.value = `${stock.name} (${stock.symbol})`;
     stockSymbolInput.value = stock.symbol;
     currentPriceInput.value = stock.price;
+    if (marketPriceStatus) marketPriceStatus.textContent = 'Fetching latest market price...';
     updatePricePreviews();
     hideSuggestions();
+
+    try {
+      const response = await apiFetch(`/api/market/quote/${encodeURIComponent(stock.symbol)}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Live quote unavailable');
+      currentPriceInput.value = data.quote.price;
+      updatePricePreviews();
+      if (marketPriceStatus) {
+        const freshness = data.quote.cached ? 'Cached within the last 5 minutes' : 'Latest available';
+        marketPriceStatus.textContent = `${freshness} BSE price from ${data.quote.source}: ${formatCurrency(data.quote.price)} (${data.quote.changePercent}).`;
+      }
+    } catch (error) {
+      if (marketPriceStatus) marketPriceStatus.textContent = `Live quote unavailable; using catalog price. ${error.message}`;
+    }
   }
 
   function renderSuggestions(stocks) {

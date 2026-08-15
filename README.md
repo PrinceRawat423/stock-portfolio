@@ -37,5 +37,6 @@ A full-stack web app for managing stock portfolios, including user authenticatio
 ## Notes
 - The app uses MongoDB for users, sessions, portfolio, and transactions.
 - Use `GET /api/health` to quickly verify backend status (database/email service state).
-- Current prices are entered manually, but the UI and backend can be extended for live price API integration.
+- Current prices are fetched server-side from Alpha Vantage when a stock is selected. The catalog price is used only as a fallback if the provider is unavailable or rate-limited.
+- Add `ALPHA_VANTAGE_API_KEY` to `.env` (or the locally ignored `.env.live-prices`) to enable market quotes. Indian catalog symbols use Alpha Vantage's BSE symbol convention (for example, `RELIANCE.BSE`). Free Alpha Vantage quotes may be end-of-day or delayed; do not present them as guaranteed real-time data.
 - Password reset OTP email requires valid SMTP credentials unless `DEV_OTP_FALLBACK=true`.
