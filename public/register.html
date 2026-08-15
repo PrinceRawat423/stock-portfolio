@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register - Stock Portfolio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="center-screen landing-screen">
+    <section class="landing-shell register-shell">
+      <div class="landing-copy">
+        <span class="eyebrow">Your investing workspace</span>
+        <h1>Build a clearer view of your money.</h1>
+        <p class="hero-text">Create your account and bring every holding, trade, and portfolio decision into one calm, organized place.</p>
+        <div class="hero-points" aria-label="Portfolio benefits">
+          <div class="hero-point">
+            <strong>Track with ease</strong>
+            <span>Keep your investments organized in one focused dashboard.</span>
+          </div>
+          <div class="hero-point">
+            <strong>See the full picture</strong>
+            <span>Understand your portfolio's progress at a glance.</span>
+          </div>
+          <div class="hero-point">
+            <strong>Stay in control</strong>
+            <span>Record each transaction whenever it happens.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card auth-card">
+        <div class="auth-card-header">
+          <span class="auth-badge">Start investing smarter</span>
+          <h2>Create your account</h2>
+          <p>It only takes a minute to set up your portfolio.</p>
+        </div>
+        <form id="register-form">
+          <label for="name">Full name</label>
+          <input type="text" id="name" placeholder="Your name" required minlength="2" maxlength="50" title="Name must be 2 to 50 characters." autocomplete="name" spellcheck="false" autocapitalize="words" />
+          <label for="email">Email address</label>
+          <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" />
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Create a password" required minlength="5" maxlength="15" title="Password must be 5 to 15 characters long." autocomplete="new-password" />
+          <button type="submit" class="primary-btn">Create account</button>
+        </form>
+        <p class="small-text">
+          Already have an account? <a href="index.html">Log in</a>
+        </p>
+        <div id="message" class="message" role="alert" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+  <script src="theme.js"></script>
+  <script src="api.js"></script>
+  <script>
+    const form = document.getElementById('register-form');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.textContent = '';
+      const name = document.getElementById('name').value.trim().replace(/\s+/g, ' ');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      if (name.length < 2 || name.length > 50) {
+        message.textContent = 'Name must be 2 to 50 characters.';
+        return;
+      }
+      if (password.length < 5 || password.length > 15) {
+        message.textContent = 'Password must be 5 to 15 characters long.';
+        return;
+      }
+      try {
+        const response = await apiFetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          window.location.href = 'dashboard.html';
+        } else {
+          message.textContent = data.error || 'Registration failed.';
+        }
+      } catch (err) {
+        message.textContent = 'Unable to contact server. Please ensure backend is running at http://localhost:3000.';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Records - Stock Portfolio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">Portfolio Records</div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="stock-graph.html">Stock Graph</a>
+      <a href="profile.html">Profile</a>
+      <a href="#" id="logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="grid-summary">
+      <div class="card summary-card">
+        <span class="summary-label">Capital Deployed</span>
+        <h2>Total Investment</h2>
+        <p id="total-investment">Rs 0.00</p>
+      </div>
+      <div class="card summary-card">
+        <span class="summary-label">Market Snapshot</span>
+        <h2>Current Value</h2>
+        <p id="current-value">Rs 0.00</p>
+      </div>
+      <div class="card summary-card">
+        <span class="summary-label">Net Movement</span>
+        <h2>Profit / Loss</h2>
+        <p id="profit-loss">Rs 0.00</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div class="section-title-block compact">
+          <span class="eyebrow">Holdings</span>
+          <h2>Portfolio</h2>
+        </div>
+        <div class="filter-group">
+          <input type="text" id="search-input" placeholder="Search by stock name" />
+          <select id="filter-select">
+            <option value="all">All</option>
+            <option value="profit">Profit</option>
+            <option value="loss">Loss</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="portfolio-table">
+          <thead>
+            <tr>
+              <th>Stock</th>
+              <th>Qty</th>
+              <th>Buy Price</th>
+              <th>Current Price</th>
+              <th>Invested</th>
+              <th>Current Value</th>
+              <th>Profit/Loss</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="portfolio-empty" class="empty-state hidden">
+        <strong>No holdings added yet</strong>
+        <p>Add stocks from the dashboard, then manage the full portfolio here.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div class="section-title-block compact">
+          <span class="eyebrow">Recent Activity</span>
+          <h2>Transaction History</h2>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="transaction-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Stock</th>
+              <th>Type</th>
+              <th>Qty</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="transaction-empty" class="empty-state hidden">
+        <strong>No transactions yet</strong>
+        <p>Your buy and sell activity will show up here once you start managing positions.</p>
+      </div>
+      <div id="records-message" class="message"></div>
+    </section>
+  </main>
+
+  <dialog id="edit-dialog" class="edit-dialog">
+    <form method="dialog" id="edit-form" class="edit-form card">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Update Position</span>
+          <h2 id="edit-stock-title">Edit holding</h2>
+        </div>
+        <button type="button" id="edit-close" class="icon-btn" aria-label="Close dialog">x</button>
+      </div>
+      <input type="hidden" id="edit-stock-id" />
+      <div class="grid-form">
+        <div class="form-field">
+          <label for="edit-quantity">Quantity</label>
+          <input type="number" id="edit-quantity" min="1" required />
+        </div>
+        <div class="form-field">
+          <label for="edit-buy-price">Buy Price</label>
+          <input type="number" id="edit-buy-price" step="0.01" min="0" required />
+        </div>
+        <div class="form-field form-field-wide">
+          <label for="edit-current-price">Current Price</label>
+          <input type="number" id="edit-current-price" step="0.01" min="0" required />
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" id="edit-cancel" class="secondary-btn ghost-btn">Cancel</button>
+        <button type="submit" class="primary-btn">Save Changes</button>
+      </div>
+      <div id="edit-message" class="message"></div>
+    </form>
+  </dialog>
+
+  <script src="theme.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
