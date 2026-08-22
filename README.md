@@ -38,7 +38,8 @@ Node.js, Express, MongoDB, Express Session, bcrypt, Nodemailer, Alpha Vantage, J
 5. Open a browser and go to `http://localhost:3000`
 
 ## Project Structure
-- `server.js` - application bootstrap and Express wiring; route migration is intentionally incremental to preserve the session/OAuth contract
+- `server.js` - thin process entry point
+- `server/app.js` - Express application bootstrap and infrastructure wiring
 - `server/controllers/` - request handlers, including analytics and system/market endpoints
 - `server/routes/` - grouped API route definitions
 - `server/middleware/` - reusable authentication middleware
