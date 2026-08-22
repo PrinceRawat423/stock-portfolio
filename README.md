@@ -38,7 +38,11 @@ Node.js, Express, MongoDB, Express Session, bcrypt, Nodemailer, Alpha Vantage, J
 5. Open a browser and go to `http://localhost:3000`
 
 ## Project Structure
-- `server.js` - application bootstrap and Express wiring (legacy routes are being incrementally migrated)
+- `server.js` - application bootstrap and Express wiring; route migration is intentionally incremental to preserve the session/OAuth contract
+- `server/controllers/` - request handlers, including analytics and system/market endpoints
+- `server/routes/` - grouped API route definitions
+- `server/middleware/` - reusable authentication middleware
+- `server/config/` - deployment configuration guidance
 - `server/services/portfolio-analytics.js` - reusable, tested portfolio analytics service
 - `docs/openapi.yaml` - OpenAPI 3 contract, rendered at `/api/docs`
 - `tests/` - Jest unit/API test suite
@@ -74,7 +78,7 @@ The next migration step is to move the remaining route handlers from `server.js`
 npm test
 ```
 
-Tests cover analytics calculations and are run automatically by GitHub Actions for pushes and pull requests to `main`. Add Supertest coverage for authentication and CRUD once the application bootstrap is fully dependency-injected, so tests can use an isolated MongoDB database.
+Tests cover analytics calculations and are run automatically by GitHub Actions for pushes and pull requests to `main`. The next test expansion is Supertest coverage for authentication and CRUD using an isolated MongoDB database.
 
 ## Deployment
 

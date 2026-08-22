@@ -12,7 +12,11 @@ const { MongoClient, ObjectId } = require('mongodb');
 const nodemailer = require('nodemailer');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yaml');
-const { calculatePortfolioAnalytics } = require('./server/services/portfolio-analytics');
+const { createSystemController } = require('./server/controllers/system.controller');
+const { createAnalyticsController } = require('./server/controllers/analytics.controller');
+const { createSystemRouter } = require('./server/routes/system.routes');
+const { createAnalyticsRouter } = require('./server/routes/analytics.routes');
+const { requireAuth: requireAuthMiddleware } = require('./server/middleware/require-auth');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -200,10 +204,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument, { explorer: true }));
 
 function requireAuth(req, res, next) {
-  if (req.session.userId) {
-    return next();
-  }
-  return res.status(401).json({ error: 'Unauthorized' });
+  return requireAuthMiddleware(req, res, next);
 }
 
 function respondServerError(res, error, message) {
@@ -957,19 +958,15 @@ app.get('/api/portfolio', requireAuth, async (req, res) => {
   }
 });
 
-app.get('/api/portfolio/analytics', requireAuth, async (req, res) => {
-  const userId = ensureSessionUserId(req, res);
-  if (!userId) return;
-
-  try {
-    const rows = await portfolioCollection.find({ user_id: userId }).sort({ created_at: -1 }).toArray();
-    const portfolio = rows.map(mapPortfolioItem);
-
-    return res.json(calculatePortfolioAnalytics(portfolio));
-  } catch (error) {
-    return respondServerError(res, error, 'Unable to load portfolio analytics.');
-  }
-});
+app.use('/api', createAnalyticsRouter({
+  requireAuth,
+  getAnalytics: createAnalyticsController({
+    getPortfolioCollection: () => portfolioCollection,
+    ensureSessionUserId,
+    mapPortfolioItem,
+    respondServerError
+  })
+}));
 
 app.post('/api/portfolio', requireAuth, async (req, res) => {
   const { stockName, stockSymbol, quantity, buyPrice, currentPrice } = req.body;
@@ -1109,6 +1106,16 @@ app.get('/api/transactions', requireAuth, async (req, res) => {
     return respondServerError(res, error, 'Unable to load transaction history.');
   }
 });
+
+app.use('/api', createSystemRouter({
+  requireAuth,
+  controller: createSystemController({
+    getState: () => ({ usersCollection, portfolioCollection, transactionsCollection, mailTransport, allowDevOtpFallback }),
+    stockCatalog,
+    getLatestMarketQuote,
+    respondServerError
+  })
+}));
 
 app.get('/api/status', (req, res) => {
   res.json({ authenticated: Boolean(req.session.userId) });
