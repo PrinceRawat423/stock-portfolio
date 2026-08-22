@@ -6,3 +6,4 @@ server.err.log
 server.out.log
 .env
 .env.live-prices
+.dev-server.pid

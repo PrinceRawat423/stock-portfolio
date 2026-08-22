@@ -10,11 +10,40 @@ const session = require('express-session');
 const { MongoStore } = require('connect-mongo');
 const { MongoClient, ObjectId } = require('mongodb');
 const nodemailer = require('nodemailer');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yaml');
+const { calculatePortfolioAnalytics } = require('./server/services/portfolio-analytics');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const devPidFile = process.env.DEV_SERVER_PID_FILE ? path.resolve(process.env.DEV_SERVER_PID_FILE) : null;
 const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/stock_portfolio';
 const dbName = process.env.MONGO_DB_NAME || 'stock_portfolio';
+
+function writeDevPidFile() {
+  if (!devPidFile) return;
+
+  try {
+    fs.writeFileSync(devPidFile, String(process.pid));
+  } catch (error) {
+    console.warn(`Could not write dev server PID file: ${error.message}`);
+  }
+}
+
+function removeDevPidFile() {
+  if (!devPidFile) return;
+
+  try {
+    if (fs.existsSync(devPidFile) && fs.readFileSync(devPidFile, 'utf8').trim() === String(process.pid)) {
+      fs.unlinkSync(devPidFile);
+    }
+  } catch {
+    // Best-effort cleanup only.
+  }
+}
+
+writeDevPidFile();
+process.once('exit', removeDevPidFile);
 
 let usersCollection;
 let portfolioCollection;
@@ -23,6 +52,9 @@ let sessionMiddleware;
 const passwordResetOtps = new Map();
 const stockCatalog = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'data', 'stocks.json'), 'utf8')
+);
+const openApiDocument = YAML.parse(
+  fs.readFileSync(path.join(__dirname, 'docs', 'openapi.yaml'), 'utf8')
 );
 const otpLifetimeMs = 10 * 60 * 1000;
 const isProduction = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
@@ -165,6 +197,7 @@ app.use((req, res, next) => {
   return sessionMiddleware(req, res, next);
 });
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument, { explorer: true }));
 
 function requireAuth(req, res, next) {
   if (req.session.userId) {
@@ -932,60 +965,7 @@ app.get('/api/portfolio/analytics', requireAuth, async (req, res) => {
     const rows = await portfolioCollection.find({ user_id: userId }).sort({ created_at: -1 }).toArray();
     const portfolio = rows.map(mapPortfolioItem);
 
-    if (!portfolio.length) {
-      return res.json(EMPTY_ANALYTICS_RESPONSE);
-    }
-
-    const totals = calculateTotals(portfolio);
-    const profitableCount = portfolio.filter((item) => item.profitLoss > 0).length;
-    const losingCount = portfolio.filter((item) => item.profitLoss < 0).length;
-    const winRate = portfolio.length ? (profitableCount / portfolio.length) * 100 : 0;
-
-    const sortedByReturn = [...portfolio].sort((a, b) => b.profitLossPercent - a.profitLossPercent);
-    const sortedByValue = [...portfolio].sort((a, b) => b.currentValue - a.currentValue);
-
-    const topPerformer = sortedByReturn[0];
-    const weakestPerformer = sortedByReturn[sortedByReturn.length - 1];
-    const largestAllocation = sortedByValue[0];
-
-    const allocation = sortedByValue.slice(0, 5).map((item) => ({
-      stock: item.stock_name,
-      symbol: item.stock_symbol,
-      sharePercent: totals.currentValue ? Number(((item.currentValue / totals.currentValue) * 100).toFixed(2)) : 0,
-      value: item.currentValue
-    }));
-
-    return res.json({
-      summary: {
-        holdingsCount: portfolio.length,
-        profitableCount,
-        losingCount,
-        winRate: Number(winRate.toFixed(2)),
-        averageReturnPercent: Number((portfolio.reduce((acc, item) => acc + item.profitLossPercent, 0) / portfolio.length).toFixed(2)),
-        totalInvestment: Number(totals.totalInvestment.toFixed(2)),
-        currentValue: Number(totals.currentValue.toFixed(2)),
-        totalProfitLoss: Number(totals.totalProfitLoss.toFixed(2))
-      },
-      topPerformer: {
-        stock: topPerformer.stock_name,
-        symbol: topPerformer.stock_symbol,
-        returnPercent: Number(topPerformer.profitLossPercent.toFixed(2)),
-        profitLoss: Number(topPerformer.profitLoss.toFixed(2))
-      },
-      weakestPerformer: {
-        stock: weakestPerformer.stock_name,
-        symbol: weakestPerformer.stock_symbol,
-        returnPercent: Number(weakestPerformer.profitLossPercent.toFixed(2)),
-        profitLoss: Number(weakestPerformer.profitLoss.toFixed(2))
-      },
-      largestAllocation: {
-        stock: largestAllocation.stock_name,
-        symbol: largestAllocation.stock_symbol,
-        sharePercent: totals.currentValue ? Number(((largestAllocation.currentValue / totals.currentValue) * 100).toFixed(2)) : 0,
-        value: Number(largestAllocation.currentValue.toFixed(2))
-      },
-      allocation
-    });
+    return res.json(calculatePortfolioAnalytics(portfolio));
   } catch (error) {
     return respondServerError(res, error, 'Unable to load portfolio analytics.');
   }

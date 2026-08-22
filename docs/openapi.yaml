@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: Stock Portfolio Management API
+  version: 1.0.0
+  description: Session-authenticated APIs for portfolio management. Market quotes can be delayed or end-of-day.
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/health:
+    get:
+      summary: Check database and mail-service readiness
+      responses:
+        '200': { description: Service status }
+  /api/register:
+    post:
+      summary: Register and start a session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '200': { description: Registered }
+        '409': { description: Email exists }
+  /api/login:
+    post:
+      summary: Log in and start a session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: Logged in }
+        '401': { description: Invalid credentials }
+  /api/logout:
+    post:
+      summary: End the current session
+      responses:
+        '200': { description: Logged out }
+        '401': { description: Unauthorized }
+  /api/portfolio:
+    get:
+      summary: List the signed-in user's holdings
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Holdings and totals }
+    post:
+      summary: Add a stock holding and BUY transaction
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HoldingRequest' }
+      responses:
+        '200': { description: Holding created }
+  /api/portfolio/{id}:
+    put:
+      summary: Update a holding
+      security: [{ sessionCookie: [] }]
+      parameters: [{ $ref: '#/components/parameters/HoldingId' }]
+      responses:
+        '200': { description: Holding updated }
+    delete:
+      summary: Delete a holding and record a SELL transaction
+      security: [{ sessionCookie: [] }]
+      parameters: [{ $ref: '#/components/parameters/HoldingId' }]
+      responses:
+        '200': { description: Holding deleted }
+  /api/portfolio/analytics:
+    get:
+      summary: Allocation and performance analytics
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Analytics response }
+  /api/transactions:
+    get:
+      summary: List transactions
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Transaction history }
+components:
+  securitySchemes:
+    sessionCookie: { type: apiKey, in: cookie, name: connect.sid }
+  parameters:
+    HoldingId: { name: id, in: path, required: true, schema: { type: string } }
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties: { name: { type: string }, email: { type: string, format: email }, password: { type: string, format: password } }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties: { email: { type: string, format: email }, password: { type: string, format: password } }
+    HoldingRequest:
+      type: object
+      required: [stockName, quantity, buyPrice, currentPrice]
+      properties:
+        stockName: { type: string }
+        stockSymbol: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        buyPrice: { type: number, minimum: 0.01 }
+        currentPrice: { type: number, minimum: 0.01 }
