@@ -33,6 +33,16 @@
     });
   }
 
+  function markCurrentPage() {
+    const currentPath = window.location.pathname.replace(/\/$/, '') || '/index.html';
+    document.querySelectorAll('.topbar nav a[href]').forEach((link) => {
+      const linkPath = new URL(link.href, window.location.origin).pathname.replace(/\/$/, '');
+      if (linkPath === currentPath) {
+        link.setAttribute('aria-current', 'page');
+      }
+    });
+  }
+
   function ensureToggle() {
     if (document.querySelector('.theme-toggle')) {
       return;
@@ -51,6 +61,7 @@
     }
 
     attachToggle(toggle);
+    markCurrentPage();
     applyTheme(document.documentElement.getAttribute('data-theme') || DARK);
   }
 

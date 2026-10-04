@@ -4,29 +4,19 @@ A full-stack portfolio tracker that helps users securely manage holdings, record
 
 Built as a placement-ready project with a clean client experience, session-based authentication, documented APIs, automated tests, and CI.
 
-## Highlights
+**Quick links:** [Features](#features) · [Tech stack](#tech-stack) · [Screenshots](#screenshots) · [Live demo](#live-demo) · [Setup](#setup)
+
+## Problem
+
+Individual investors often manage holdings, transactions, and performance figures across spreadsheets and disconnected tools. This project brings those essentials into one secure workspace, making it easier to record positions and understand portfolio health at a glance.
+
+## Features
 
 - Secure account workflow: registration, login/logout, profile updates, password changes, and OTP-based password reset.
 - Complete portfolio lifecycle: create, edit, and remove holdings while preserving buy/sell transaction history.
 - Decision-oriented analytics: allocation, sector allocation, daily P/L, diversification score, and best/worst performers.
 - Live-quote integration with Alpha Vantage, server-side caching, clear fallbacks, and rate-limit-aware error handling.
 - Production-minded foundation: Helmet, rate limiting, HTTP-only session cookies, Mongo-backed sessions, OpenAPI docs, Jest, and GitHub Actions.
-
-## Screenshots
-
-> Add two locally captured, redacted product screenshots before a placement submission. Use real portfolio data only if it is safe to share; never capture API keys, email addresses, session cookies, or private holdings.
-
-| Screen | What to capture |
-| --- | --- |
-| Dashboard | Portfolio summary, allocation, and performance cards after signing in. |
-| Portfolio | Holdings table, search/filter controls, and the add/edit position flow. |
-
-Suggested capture workflow: run the application locally, sign in with a throwaway account, save images under `docs/images/`, then replace the examples below.
-
-```md
-![Dashboard](docs/images/dashboard.png)
-![Portfolio management](docs/images/portfolio.png)
-```
 
 ## Tech stack
 
@@ -41,6 +31,26 @@ Suggested capture workflow: run the application locally, sign in with a throwawa
 | API documentation | OpenAPI 3, Swagger UI |
 | Testing | Jest, Supertest |
 | CI | GitHub Actions |
+
+## Screenshots
+
+> Add two locally captured, redacted product screenshots before a placement submission. Use real portfolio data only if it is safe to share; never capture API keys, email addresses, session cookies, or private holdings.
+
+| Screen | What to capture |
+| --- | --- |
+| Dashboard | Portfolio summary, allocation, and performance cards after signing in. |
+| Portfolio | Holdings table, search/filter controls, and the add/edit position flow. |
+
+Save images under `docs/images/` and embed them here:
+
+```md
+![Dashboard](docs/images/dashboard.png)
+![Portfolio management](docs/images/portfolio.png)
+```
+
+## Live demo
+
+There is no public deployment URL configured yet. Run the project locally using the setup steps below, or add your Render/Railway deployment URL here before sharing it with recruiters.
 
 ## Architecture
 
@@ -57,17 +67,6 @@ MongoDB (users, portfolios, transactions, sessions)
 ```
 
 The application keeps browser concerns in `public/`, exposes grouped HTTP endpoints through Express, and persists users, holdings, transactions, and sessions in MongoDB. Market-data and email providers are configured only through environment variables.
-
-## Features
-
-- Account registration, login, logout, profile editing, password update, and password reset with OTP.
-- OAuth entry points for Google, Facebook, and Apple when provider credentials are configured.
-- Add, update, and delete stock positions with symbol validation from the local stock catalog.
-- Buy/sell transaction recording and date-based transaction history.
-- Portfolio search and profit/loss filtering.
-- Investment summary, allocation and sector allocation, daily P/L, diversification score, and top/weakest performer insights.
-- Live market quote lookup with a documented delayed/end-of-day-data caveat on Alpha Vantage's free tier.
-- Interactive API documentation at `/api/docs` and a health endpoint for operational checks.
 
 ## API
 
@@ -86,7 +85,7 @@ The application keeps browser concerns in `public/`, exposes grouped HTTP endpoi
 
 Explore the complete request/response contract in the [OpenAPI specification](docs/openapi.yaml), or start the app and open [http://localhost:3000/api/docs](http://localhost:3000/api/docs).
 
-## Getting started
+## Setup
 
 ### Prerequisites
 
