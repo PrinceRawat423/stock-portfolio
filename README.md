@@ -153,7 +153,7 @@ Current Jest/Supertest coverage verifies portfolio analytics, health behavior, a
    npm start
    ```
 
-5. Visit [http://localhost:3000](http://localhost:3000).
+5. Visit `http://localhost:3000` in your browser.
 
 ## Environment Variables
 
