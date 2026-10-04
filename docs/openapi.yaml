@@ -3,8 +3,6 @@ info:
   title: Stock Portfolio Management API
   version: 1.0.0
   description: Session-authenticated APIs for portfolio management. Market quotes can be delayed or end-of-day.
-servers:
-  - url: http://localhost:3000
 paths:
   /api/health:
     get:
