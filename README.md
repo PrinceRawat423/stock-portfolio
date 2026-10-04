@@ -91,7 +91,7 @@ Indexes support unique user emails, user-scoped holdings, and date-ordered trans
 
 ## API Documentation
 
-Run the app and open [http://localhost:3000/api/docs](http://localhost:3000/api/docs) for interactive Swagger documentation. The source contract is available at [docs/openapi.yaml](docs/openapi.yaml).
+Interactive Swagger documentation is available at `/api/docs` when the application is running locally. Recruiters can review the portable API contract directly in [docs/openapi.yaml](docs/openapi.yaml).
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
