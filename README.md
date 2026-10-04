@@ -1,94 +1,171 @@
 # Stock Portfolio Management System
 
-[Live Demo](#deployment) · [API Documentation](http://localhost:3000/api/docs) · [OpenAPI specification](docs/openapi.yaml)
+A full-stack portfolio tracker that helps users securely manage holdings, record buy/sell activity, and understand portfolio performance through actionable analytics.
 
-A full-stack web app for managing stock portfolios, including user authentication, profile management, portfolio CRUD, transaction history, search, and profit/loss tracking.
+Built as a placement-ready project with a clean client experience, session-based authentication, documented APIs, automated tests, and CI.
 
-## Features
-- User signup, login, logout
-- Edit profile and change password
-- Add, update, delete stock positions
-- Record buy/sell transactions with date history
-- Portfolio dashboard with investment summary and individual performance
-- Search and filter stocks by name and profit/loss
-- Allocation, sector allocation, daily P/L, diversification score, and top/weakest performers
-- Interactive API documentation at `/api/docs`
+## Highlights
 
-## Tech Stack
+- Secure account workflow: registration, login/logout, profile updates, password changes, and OTP-based password reset.
+- Complete portfolio lifecycle: create, edit, and remove holdings while preserving buy/sell transaction history.
+- Decision-oriented analytics: allocation, sector allocation, daily P/L, diversification score, and best/worst performers.
+- Live-quote integration with Alpha Vantage, server-side caching, clear fallbacks, and rate-limit-aware error handling.
+- Production-minded foundation: Helmet, rate limiting, HTTP-only session cookies, Mongo-backed sessions, OpenAPI docs, Jest, and GitHub Actions.
 
-Node.js, Express, MongoDB, Express Session, bcrypt, Nodemailer, Alpha Vantage, Jest, and GitHub Actions.
+## Screenshots
 
-## Setup
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Create a local env file:
-   ```bash
-   copy .env.example .env
-   ```
-3. Update `.env`:
-   - For real OTP emails, set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `MAIL_FROM` (for example, `Stock Portfolio <your_email@gmail.com>`).
-   - For local testing without email, set `DEV_OTP_FALLBACK=true`. The OTP will be printed in the server console.
-   - For Gmail, use an App Password instead of your normal Gmail password.
-4. Start the server:
-   ```bash
-   npm start
-   ```
-5. Open a browser and go to `http://localhost:3000`
+> Add two locally captured, redacted product screenshots before a placement submission. Use real portfolio data only if it is safe to share; never capture API keys, email addresses, session cookies, or private holdings.
 
-## Project Structure
-- `server.js` - thin process entry point
-- `server/app.js` - Express application bootstrap and infrastructure wiring
-- `server/controllers/` - request handlers, including analytics and system/market endpoints
-- `server/routes/` - grouped API route definitions
-- `server/middleware/` - reusable authentication middleware
-- `server/config/` - deployment configuration guidance
-- `server/services/portfolio-analytics.js` - reusable, tested portfolio analytics service
-- `docs/openapi.yaml` - OpenAPI 3 contract, rendered at `/api/docs`
-- `tests/` - Jest unit/API test suite
-- `.github/workflows/ci.yml` - install and test checks on pushes and pull requests
-- `public/` - frontend pages and client app logic
-- `data/stocks.json` - local stock catalog used for suggestion and symbol validation
+| Screen | What to capture |
+| --- | --- |
+| Dashboard | Portfolio summary, allocation, and performance cards after signing in. |
+| Portfolio | Holdings table, search/filter controls, and the add/edit position flow. |
 
-## API
+Suggested capture workflow: run the application locally, sign in with a throwaway account, save images under `docs/images/`, then replace the examples below.
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| POST | `/api/register`, `/api/login`, `/api/logout` | Session authentication |
-| GET/POST | `/api/portfolio` | List or add holdings |
-| PUT/DELETE | `/api/portfolio/:id` | Update or remove a holding |
-| GET | `/api/portfolio/analytics` | Allocation and performance analytics |
-| GET | `/api/transactions` | Transaction history |
-| GET | `/api/health` | Database/email service status |
+```md
+![Dashboard](docs/images/dashboard.png)
+![Portfolio management](docs/images/portfolio.png)
+```
 
-See the [OpenAPI specification](docs/openapi.yaml) or run the app and open `/api/docs` for request details.
+## Tech stack
+
+| Layer | Tools |
+| --- | --- |
+| Frontend | HTML, CSS, vanilla JavaScript |
+| Backend | Node.js, Express |
+| Data | MongoDB, MongoDB session store |
+| Authentication | express-session, bcrypt, OAuth provider hooks |
+| Email | Nodemailer for OTP delivery |
+| Market data | Alpha Vantage (server-side, cached) |
+| API documentation | OpenAPI 3, Swagger UI |
+| Testing | Jest, Supertest |
+| CI | GitHub Actions |
 
 ## Architecture
 
 ```text
-Browser → Express routes → services/controllers → MongoDB
-                         ↘ Alpha Vantage (cached market quotes)
+Browser (HTML/CSS/JavaScript)
+          |
+          v
+Express application ----> Swagger UI / OpenAPI contract
+    |       |       \
+    |       |        +----> Alpha Vantage (cached quotes)
+    |       +------------> SMTP provider (password-reset OTP)
+    v
+MongoDB (users, portfolios, transactions, sessions)
 ```
 
-The next migration step is to move the remaining route handlers from `server.js` into `server/routes` and `server/controllers`; the analytics service already follows this boundary. This staged approach avoids breaking session-based client APIs.
+The application keeps browser concerns in `public/`, exposes grouped HTTP endpoints through Express, and persists users, holdings, transactions, and sessions in MongoDB. Market-data and email providers are configured only through environment variables.
 
-## Testing and CI
+## Features
+
+- Account registration, login, logout, profile editing, password update, and password reset with OTP.
+- OAuth entry points for Google, Facebook, and Apple when provider credentials are configured.
+- Add, update, and delete stock positions with symbol validation from the local stock catalog.
+- Buy/sell transaction recording and date-based transaction history.
+- Portfolio search and profit/loss filtering.
+- Investment summary, allocation and sector allocation, daily P/L, diversification score, and top/weakest performer insights.
+- Live market quote lookup with a documented delayed/end-of-day-data caveat on Alpha Vantage's free tier.
+- Interactive API documentation at `/api/docs` and a health endpoint for operational checks.
+
+## API
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/api/register` | Create an account |
+| `POST` | `/api/login` | Start an authenticated session |
+| `POST` | `/api/logout` | End the current session |
+| `GET`, `PUT` | `/api/profile` | Read or update the signed-in profile |
+| `GET`, `POST` | `/api/portfolio` | List or add portfolio holdings |
+| `PUT`, `DELETE` | `/api/portfolio/:id` | Update or remove a holding |
+| `GET` | `/api/transactions` | Retrieve transaction history |
+| `GET` | `/api/stocks` | Search the local stock catalog |
+| `GET` | `/api/market/quote/:symbol` | Get a cached live quote when configured |
+| `GET` | `/api/health` | Check database and email-service status |
+
+Explore the complete request/response contract in the [OpenAPI specification](docs/openapi.yaml), or start the app and open [http://localhost:3000/api/docs](http://localhost:3000/api/docs).
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 18 or later
+- MongoDB running locally or a MongoDB connection string
+
+### Installation
+
+1. Clone the repository and enter the project directory.
+
+   ```bash
+   git clone https://github.com/PrinceRawat423/stock-portfolio.git
+   cd stock-portfolio
+   ```
+
+2. Install dependencies.
+
+   ```bash
+   npm install
+   ```
+
+3. Create a local environment file.
+
+   ```bash
+   copy .env.example .env
+   ```
+
+   On macOS/Linux, use `cp .env.example .env`.
+
+4. Update `.env` with your local MongoDB connection and a strong, unique `SESSION_SECRET`.
+
+   - Set SMTP values to send real password-reset emails.
+   - For local OTP testing only, set `DEV_OTP_FALLBACK=true`; the OTP is written to the server console.
+   - Add `ALPHA_VANTAGE_API_KEY` to enable market quotes.
+
+5. Start the application.
+
+   ```bash
+   npm start
+   ```
+
+6. Visit [http://localhost:3000](http://localhost:3000).
+
+## Demo access
+
+No shared credentials are committed to this repository. Create a local account through the registration page, or provision a separate throwaway demo account in your deployed environment. This prevents exposing personal data and makes the project safe to fork.
+
+## Testing and quality
+
+Run the automated suite with:
 
 ```bash
 npm test
 ```
 
-Tests cover analytics calculations and are run automatically by GitHub Actions for pushes and pull requests to `main`. The next test expansion is Supertest coverage for authentication and CRUD using an isolated MongoDB database.
+The test suite covers portfolio-analytics calculations. GitHub Actions installs dependencies and runs tests for pushes and pull requests to `main`.
+
+## Security and configuration
+
+- `.env` and `.env.live-prices` are ignored by Git; `.env.example` contains placeholders only.
+- Do not commit API keys, OAuth client secrets, SMTP passwords, MongoDB credentials, or demo-user credentials.
+- Configure secrets in the deployment platform's encrypted environment-variable settings.
+- Use a strong `SESSION_SECRET` in every non-local environment. Session cookies are HTTP-only and become secure when `NODE_ENV=production`.
+- Alpha Vantage free-tier quotes may be delayed or end-of-day data and are cached for five minutes; they are not guaranteed real-time prices.
+
+## Project structure
+
+```text
+public/                    Frontend pages, styles, and browser logic
+server/app.js              Express app, middleware, routes, provider integrations
+server/controllers/        Request handlers and analytics responsibilities
+server/routes/             Grouped API route definitions
+server/services/           Reusable business logic
+data/stocks.json           Local stock catalog for suggestions and validation
+docs/openapi.yaml           OpenAPI 3 contract
+tests/                     Jest unit and API tests
+.github/workflows/ci.yml   Continuous-integration workflow
+```
 
 ## Deployment
 
-Deploy to Render, Railway, or a similar Node.js host with `npm start`. Set `NODE_ENV=production`, `MONGO_URI`, `SESSION_SECRET`, SMTP credentials, and any OAuth/Alpha Vantage credentials in the host's encrypted environment settings. Replace the Live Demo placeholder at the top with the deployed URL—do not commit demo credentials or `.env` files.
-
-## Notes
-- The app uses MongoDB for users, sessions, portfolio, and transactions.
-- Use `GET /api/health` to quickly verify backend status (database/email service state).
-- Current prices are fetched server-side from Alpha Vantage when a stock is selected. The catalog price is used only as a fallback if the provider is unavailable or rate-limited.
-- Add `ALPHA_VANTAGE_API_KEY` to `.env` (or the locally ignored `.env.live-prices`) to enable market quotes. Indian catalog symbols use Alpha Vantage's BSE symbol convention (for example, `RELIANCE.BSE`). Free Alpha Vantage quotes may be end-of-day or delayed; do not present them as guaranteed real-time data.
-- Password reset OTP email requires valid SMTP credentials unless `DEV_OTP_FALLBACK=true`.
-- Alpha Vantage free-tier quotes may be delayed/end-of-day and are cached for five minutes. They are not guaranteed real-time market data.
+Deploy to Render, Railway, or another Node.js host using `npm start`. Set `NODE_ENV=production` and configure `MONGO_URI`, `MONGO_DB_NAME`, `SESSION_SECRET`, SMTP values, OAuth credentials (if used), and `ALPHA_VANTAGE_API_KEY` in the host's secret manager. Do not add `.env` files or credentials to the repository.
