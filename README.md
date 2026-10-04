@@ -6,11 +6,12 @@ A full-stack application for tracking investments, recording transactions, and u
 
 ## Live Demo
 
-No public deployment URL is configured yet. Run the application locally with the [installation steps](#installation), then replace this section with your Render or Railway URL before sharing the project with recruiters.
+Run the application locally with the [installation steps](#installation), then open the app in your browser to explore the portfolio dashboard and API endpoints.
 
 ## GitHub Repository
 
 Repository: [PrinceRawat423/stock-portfolio](https://github.com/PrinceRawat423/stock-portfolio)
+Website: [GitHub project page](https://github.com/PrinceRawat423/stock-portfolio)
 
 ## Screenshots
 

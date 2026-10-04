@@ -2,6 +2,23 @@
   "name": "stock-portfolio-management",
   "version": "1.0.0",
   "description": "Stock Portfolio Management System with user authentication, portfolio tracking, and transaction history.",
+  "homepage": "https://github.com/PrinceRawat423/stock-portfolio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PrinceRawat423/stock-portfolio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PrinceRawat423/stock-portfolio/issues"
+  },
+  "keywords": [
+    "stock-portfolio",
+    "finance",
+    "investments",
+    "portfolio-tracker",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
